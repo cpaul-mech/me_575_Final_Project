@@ -10,6 +10,7 @@ beautifulsoup4>=4.11.1
 html5lib>=1.1
 peewee>=3.16.2
 matplotlib>=3.4.3
-
+juypter>=1.0.0
+ipykernel>=6.7.0
 # Optional dependency for pandas_datareader support
 pandas_datareader>=0.4.0
