@@ -12,7 +12,8 @@ tsla_hist = tsla.history(period="5y") # Get the historical stock data for the pa
 tsla_hist.to_csv("tsla_hist.csv") # Save the data to a csv file
 
 #%% ## Now let's go ahead and graph the data over the last 5 years.
-plt.plot(tsla_hist.index, tsla_hist["Close"])
+plt.plot(tsla_hist.index, tsla_hist["Close"]) 
+# The "Close" column contains the closing price of the stock for each day.
 plt.title("Tesla Stock Price Over the Last 5 Years")
 plt.xlabel("Date")
 plt.ylabel("Stock Price (USD)")
