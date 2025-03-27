@@ -11,3 +11,6 @@ Creating a folder from which to implement yfinance library
 5. Activate the virtual environment. In VSCode, you can do this by pressing `Ctrl+Shift+P` and typing `Python: Select Interpreter`. You can also do this in the terminal by running `source env/bin/activate`.
 6. Install the dependencies by running `pip install -r requirements.txt` in the terminal. (Unless you've already installed the dependencies when prompted to do so in VSCode in the previous step.)
 7. You should be able to run the code now.
+8. You may run into an issue where you cannot hit cmd+enter to run the Juypter Notebook cells (it's super cool, you can essentially use vsCode as a Jupyter Notebook, which means it's kinda like the development environment you're used to, you can access and view variables and whatnot) - if you run into this issue, you can fix it by running `pip install jupyter` and then restarting VSCode, and installing any required extensions such as `ipykernel`. You might also need the VSCode extension `jupyter`, by Microsoft.
+
+> **Note:** If you are concerned that a "patrickwalton" committed to the repo, then don't worry, it was a weird technical glitch where my Boss' account credentials were used from my dual booted laptop and it's difficult to change the user data.

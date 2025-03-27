@@ -5,5 +5,5 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # now we will practice getting stock data!!
-
+#%%
 tsla = yf.Ticker("TSLA")
