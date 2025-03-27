@@ -10,3 +10,10 @@ import matplotlib.pyplot as plt
 tsla = yf.Ticker("TSLA") # Create a Ticker object to access Tesla stock data
 tsla_hist = tsla.history(period="5y") # Get the historical stock data for the past 5 years
 tsla_hist.to_csv("tsla_hist.csv") # Save the data to a csv file
+
+#%% ## Now let's go ahead and graph the data over the last 5 years.
+plt.plot(tsla_hist.index, tsla_hist["Close"])
+plt.title("Tesla Stock Price Over the Last 5 Years")
+plt.xlabel("Date")
+plt.ylabel("Stock Price (USD)")
+plt.show()
