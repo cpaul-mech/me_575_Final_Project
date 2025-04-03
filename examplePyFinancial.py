@@ -3,7 +3,12 @@ import yfinance as yf
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib as mpl
 import os
+from matplotlib.ticker import FuncFormatter
+from matplotlib import cm 
+from matplotlib import rcParams
+from cycler import cycler
 # now we will practice getting stock data!!
 #%% ## Lets start off by downloading the stock data for Tesla (TSLA) for the past 5 years and storing it locally
 # we will use the yfinance library to do this
@@ -39,6 +44,12 @@ for stock in stock_names:
         print(f"Historical data for {stock} downloaded and saved to file.")
 
 #%% ## Now let's go ahead and graph the data over the last 5 years.
+# Define a larger set of colors using a colormap
+num_colors = len(stock_names)
+color_map = mpl.colormaps.get_cmap('tab20')  # 'tab20' provides 20 distinct colors
+colors = [color_map(i / (num_colors - 1)) for i in range(num_colors)]  # Normalize indices to [0, 1]
+# Set the color cycle for the plot
+rcParams['axes.prop_cycle'] = cycler(color=colors)
 plt.figure(1)
 for stock in stock_names:
     plt.plot(fin_hist_data[stock].index, fin_hist_data[stock]['Close'], label=stock)
@@ -49,3 +60,5 @@ plt.legend()
 plt.xlabel("Date")
 plt.ylabel("Stock Price (USD)")
 plt.show() #
+
+# %%
