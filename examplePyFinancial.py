@@ -27,38 +27,51 @@ stock_names = [
     "PLTR", # Palantir Technologies Inc.
     "MRNA", # Moderna Inc. * note the covid bumb?
 ]
-#%% load data from file if it exists, otherwise download it.
-fin_hist_data = {} # Initialize an empty dictionary to store the historical data for each stock
-# key is stock name, value is the historical data (DataFrame)
-for stock in stock_names:
-    if os.path.exists(f"{stock}_hist.csv"):
-        print(f"File {stock}_hist.csv already exists. Loading data...")
-        fin_hist = pd.read_csv(f"{stock}_hist.csv", index_col=0, parse_dates=True)
-        fin_hist_data[stock] = fin_hist
-    else:
-        print(f"{stock} data not found. Downloading historical data...")
-        ticker = yf.Ticker(stock) # Create a Ticker object to access stock data
-        ticker_history = ticker.history(period="5y")
-        ticker_history.to_csv(f"{stock}_hist.csv") # Save the data to a csv file
-        fin_hist_data[stock] = ticker_history
-        print(f"Historical data for {stock} downloaded and saved to file.")
+#%%
+def load_or_download_stock_data(stock_names, period="5y"):
+    """
+    Load stock data from local files if available, otherwise download it.
+    Returns a dictionary with stock names as keys and DataFrames as values.
+    """
+    fin_hist_data = {}
+    for stock in stock_names:
+        try:
+            if os.path.exists(f"{stock}_hist.csv"):
+                print(f"File {stock}_hist.csv already exists. Loading data...")
+                fin_hist = pd.read_csv(f"{stock}_hist.csv", index_col=0, parse_dates=True)
+                fin_hist_data[stock] = fin_hist
+            else:
+                print(f"{stock} data not found. Downloading historical data...")
+                ticker = yf.Ticker(stock)
+                ticker_history = ticker.history(period=period)
+                ticker_history.to_csv(f"{stock}_hist.csv")
+                fin_hist_data[stock] = ticker_history
+                print(f"Historical data for {stock} downloaded and saved to file.")
+        except Exception as e:
+            print(f"Error processing {stock}: {e}")
+    return fin_hist_data
 
-#%% ## Now let's go ahead and graph the data over the last 5 years.
-# Define a larger set of colors using a colormap
-num_colors = len(stock_names)
-color_map = mpl.colormaps.get_cmap('tab20')  # 'tab20' provides 20 distinct colors
-colors = [color_map(i / (num_colors - 1)) for i in range(num_colors)]  # Normalize indices to [0, 1]
-# Set the color cycle for the plot
-rcParams['axes.prop_cycle'] = cycler(color=colors)
-plt.figure(1)
-for stock in stock_names:
-    plt.plot(fin_hist_data[stock].index, fin_hist_data[stock]['Close'], label=stock)
-# The "Close" column contains the closing price of the stock for each day. The closing price is the last price at which the stock traded on that day.
-plt.xticks(rotation=45) # Rotate x-axis labels for better readability
-plt.title("Comparing Stock Prices Over the Last 5 Years")
-plt.legend()
-plt.xlabel("Date")
-plt.ylabel("Stock Price (USD)")
-plt.show() #
+def plot_stock_data(fin_hist_data, stock_names):
+    """
+    Plot the closing prices of stocks over time.
+    """
+    num_colors = len(stock_names)
+    color_map = mpl.colormaps.get_cmap('tab20')
+    colors = [color_map(i / (num_colors - 1)) for i in range(num_colors)]
+    rcParams['axes.prop_cycle'] = cycler(color=colors)
+    
+    plt.figure(1)
+    for stock in stock_names:
+        plt.plot(fin_hist_data[stock].index, fin_hist_data[stock]['Close'], label=stock)
+    plt.xticks(rotation=45)
+    plt.title("Comparing Stock Prices Over the Last 5 Years")
+    plt.legend()
+    plt.xlabel("Date")
+    plt.ylabel("Stock Price (USD)")
+    plt.show()
+#%% 
+# Main execution
+fin_hist_data = load_or_download_stock_data(stock_names)
+plot_stock_data(fin_hist_data, stock_names)
 
 # %%
