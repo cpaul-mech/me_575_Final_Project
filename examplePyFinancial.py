@@ -17,4 +17,4 @@ plt.plot(tsla_hist.index, tsla_hist["Close"])
 plt.title("Tesla Stock Price Over the Last 5 Years")
 plt.xlabel("Date")
 plt.ylabel("Stock Price (USD)")
-plt.show()
+plt.show() #
