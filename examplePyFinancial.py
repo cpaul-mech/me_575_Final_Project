@@ -14,7 +14,7 @@ from cycler import cycler
 # we will use the yfinance library to do this
 #check to see if the historical data has already been downloaded and saved locally
 stock_names = [
-    "TSLA", # Tesla Inc.
+    "TSLA", # Tesla Inc.b
     "AAPL", # Apple Inc.
     "MSFT", # Microsoft Corporation
     "AMZN", # Amazon.com Inc.
