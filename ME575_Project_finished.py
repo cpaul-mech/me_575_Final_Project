@@ -5,7 +5,7 @@ Created on Sat Apr  5 15:34:38 2025
 
 @author: addisonmcclure
 """
-
+#%%
 import numpy as np
 import random
 import yfinance as yf
@@ -17,7 +17,7 @@ from matplotlib.ticker import FuncFormatter
 from matplotlib import cm 
 from matplotlib import rcParams
 from cycler import cycler
-
+#%%
 # downloading stock data
 def load_or_download_stock_data(stock_names, period="5y"):
     """
@@ -212,7 +212,7 @@ def day_trading(cash_initial, data, time, R):
 
 
 # exploring the design space
-
+#%%
 n = 30
 
 # vary time in market
@@ -240,9 +240,7 @@ plt.scatter(time, profit_time, marker = 'o')
 plt.xlabel('Time (Days)')
 plt.ylabel('Average Profit ($)')
 
-
-
-
+#%%
 # vary initial cash investment
 cash = [100, 500, 1000, 5000, 10000]
 profit_cash = np.zeros(len(cash))
@@ -268,7 +266,7 @@ plt.scatter(cash, profit_cash, marker = 'o')
 plt.xlabel('Initial Investment ($)')
 plt.ylabel('Average Profit ($)')
 
-
+#%%
 
 # vary risk
 R = [0.5, 0.625, 0.75, 0.875, 1]
@@ -295,7 +293,7 @@ plt.scatter(R, profit_risk, marker = 'o')
 plt.xlabel('Risk')
 plt.ylabel('Average Profit ($)')
 
-
+#%%
 
 # vary number of stocks
 profit_stocks = np.zeros(5)
@@ -365,3 +363,5 @@ plt.ylabel("Average Profit ($)")
 
 
 
+
+# %%
