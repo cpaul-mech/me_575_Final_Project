@@ -212,7 +212,7 @@ def day_trading(cash_initial, data, time, R):
 
 
 # exploring the design space
-explorations_to_run = ['time'] # 'time', 'cash', 'risk', 'numStocks'
+explorations_to_run = ['single_long_run'] # 'time', 'cash', 'risk', 'numStocks'
 #%%
 if 'time' in explorations_to_run:
     n = 30
@@ -250,7 +250,7 @@ if 'time' in explorations_to_run:
 if 'cash' in explorations_to_run:
     n = 30
     # vary initial cash investment
-    cash = [100, 500, 1000, 5000, 10000]
+    cash = [100, 500, 1000, 2200, 5000, 7500, 10000]
     profit_cash = np.zeros(len(cash))
     profit_values = np.zeros(n)
     profit_sd_cash = np.zeros(len(cash))
@@ -274,11 +274,13 @@ if 'cash' in explorations_to_run:
     plt.figure(2)
     plt.xlabel('Initial Investment ($)')
     plt.ylabel('Average Profit ($)')
-    plt.errorbar(cash, profit_cash, yerr=profit_sd_cash, fmt='o', capsize=5)
+    plt.errorbar(cash, profit_cash, yerr=profit_sd_cash, fmt='o', capsize=5, label='Error Bars represent 1 SD for 30 iterations')
+    plt.legend()
     plt.title('Effect of Initial Investment Amount on Average Profit')
     plt.show()
 #%%
 if 'risk' in explorations_to_run:
+    n = 30
     # vary risk
     R = [0.5, 0.625, 0.75, 0.875, 1]
     profit_risk = np.zeros(len(R))
@@ -302,13 +304,16 @@ if 'risk' in explorations_to_run:
     
     # plot results
     plt.figure(2)
-    plt.errorbar(R, profit_risk, yerr=profit_sd_risk, fmt='o', capsize=5)
+    plt.errorbar(R, profit_risk, yerr=profit_sd_risk, fmt='o', capsize=5, label='Error Bars represent 1 SD for 30 iterations')
     plt.xlabel('Risk')
     plt.ylabel('Average Profit ($)')
     plt.title('Effect of Risk on Average Profit')
+    plt.legend()
+    plt.show()
 
 #%%
 if 'numStocks' in explorations_to_run:
+    n = 30
     # vary number of stocks
     profit_stocks = np.zeros(5)
     profit_values = np.zeros(n)
@@ -376,9 +381,19 @@ if 'numStocks' in explorations_to_run:
     # plot results
     plt.figure(3)
     number = [1, 3, 5, 7, 10]
-    plt.errorbar(number, profit_stocks, yerr=profit_sd_stocks, fmt='o', capsize=5)
+    plt.errorbar(number, profit_stocks, yerr=profit_sd_stocks, fmt='o', capsize=5, label='Error Bars represent 1 SD for 30 iterations')
+    plt.legend()
     plt.title("Effect of Number of Stocks on Average Profit")
     plt.xlabel("Number of Stocks in Portfolio")
     plt.ylabel("Average Profit ($)")
+    plt.show()
 
 # %%
+# Experiment with returning the portfolio history and value history of a single run with 5 years of data on all possible stocks, and 10,000 initial investment.
+# This will allow us to visualize the portfolio's performance over time.
+if 'single_long_run' in explorations_to_run:
+    cash = 10000
+    stock_names = ["TSLA", "AAPL", "MSFT", "AMZN", "GOOGL", "NVDA", "ZION", "MRNA", "NFLX", "DIS"]
+    data = organize_data(stock_names)
+    
+
