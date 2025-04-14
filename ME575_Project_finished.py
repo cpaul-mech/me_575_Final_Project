@@ -1,5 +1,5 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
+##!/usr/bin/env python3
+## -*- coding: utf-8 -*-
 """
 Created on Sat Apr  5 15:34:38 2025
 
@@ -77,7 +77,7 @@ def organize_data(stock_names, period = "5y"):
                 fin_hist = pd.read_csv(f"{stock}_hist.csv", index_col=0, parse_dates=True)
                 closing_prices = fin_hist['Close']
             else:
-                print(f"{stock} data not found. Downloading historical data for the past 10 days...")
+                print(f"{stock} data not found. Downloading historical data for the past 5 years...")
                 ticker = yf.Ticker(stock)
                 ticker_history = ticker.history(period=period)
                 ticker_history.to_csv(f"{stock}_hist.csv")
@@ -193,11 +193,11 @@ def day_trading(cash_initial, data, time, R):
         for j in range(data.shape[1]):
             
             # sell if stock rapidly increases
-            if derivatives[j] > 2:
+            if derivatives.iloc[j] > 2:
                 x, cash = sell(x, cash, data, j, i)
                 
             # buy if stock rapidly decreases
-            elif derivatives[j] < -1:
+            elif derivatives.iloc[j] < -1:  
                 x, cash = buy(x, cash, data, R, j, i)
                 
         # record purchases and sales
@@ -212,156 +212,173 @@ def day_trading(cash_initial, data, time, R):
 
 
 # exploring the design space
+explorations_to_run = ['time'] # 'time', 'cash', 'risk', 'numStocks'
 #%%
-n = 30
+if 'time' in explorations_to_run:
+    n = 30
+    # vary time in market
+    time = [90, 180, 270, 365, 600, 800, 1095] 
+    profit_time = np.zeros(len(time))
+    profit_values = np.zeros(n)
+    profit_sd_time = np.zeros(len(time))
 
-# vary time in market
-time = [90, 180, 270, 365, 1095] 
-profit_time = np.zeros(len(time))
-profit_values = np.zeros(n)
+    # constants
+    cash_initial = 1000
+    R = 1
+    stock_names = ["TSLA", "AAPL", "MSFT", "AMZN", "GOOGL"]
+    data = organize_data(stock_names)
 
-# constants
-cash_initial = 1000
-R = 1
-stock_names = ["TSLA", "AAPL", "MSFT", "AMZN", "GOOGL"]
-data = organize_data(stock_names)
+    # for each time, run day_trading() 30 times and calculate average profit
+    for i in range(len(time)):
+        for j in range(n):
+            a, b, c = day_trading(cash_initial, data, time[i], R)
+            profit_values[j] = a
+        print("completed iteration ", i+1, " of ", len(time))
+        profit_time[i] = np.mean(profit_values)
+        profit_sd_time[i] = np.std(profit_values)
+    
+    # plot results
+    plt.figure(1)
+    plt.errorbar(time, profit_time, yerr=profit_sd_time, fmt='o', capsize=5, label='Error Bars represent 1 SD for 30 iterations')
+    plt.xlabel('Time (Days)')
+    plt.ylabel('Average Profit ($)')
+    plt.legend()
+    plt.title('Effect of Time in the Market on Average Profit')
+    plt.show()
 
-# for each time, run day_trading() 30 times and calculate average profit
-for i in range(len(time)):
+#%%
+if 'cash' in explorations_to_run:
+    n = 30
+    # vary initial cash investment
+    cash = [100, 500, 1000, 5000, 10000]
+    profit_cash = np.zeros(len(cash))
+    profit_values = np.zeros(n)
+    profit_sd_cash = np.zeros(len(cash))
+
+    # constants
+    time = 365
+    R = 1
+    stock_names = ["TSLA", "AAPL", "MSFT", "AMZN", "GOOGL"]
+    data = organize_data(stock_names)
+
+    # for each cash, run day_trading() 30 times and calculate average profit
+    for i in range(len(cash)):
+        for j in range(n):
+            a, b, c = day_trading(cash[i], data, time, R)
+            profit_values[j] = a
+        print("completed iteration ", i+1, " of ", len(cash))
+        profit_sd_cash[i] = np.std(profit_values)
+        profit_cash[i] = np.mean(profit_values)
+     
+    # plot results
+    plt.figure(2)
+    plt.xlabel('Initial Investment ($)')
+    plt.ylabel('Average Profit ($)')
+    plt.errorbar(cash, profit_cash, yerr=profit_sd_cash, fmt='o', capsize=5)
+    plt.title('Effect of Initial Investment Amount on Average Profit')
+    plt.show()
+#%%
+if 'risk' in explorations_to_run:
+    # vary risk
+    R = [0.5, 0.625, 0.75, 0.875, 1]
+    profit_risk = np.zeros(len(R))
+    profit_values = np.zeros(n)
+    profit_sd_risk = np.zeros(len(R))
+
+    # constants
+    time = 365
+    cash = 1000
+    stock_names = ["NVDA", "MSFT", "MRNA", "GOOGL", "ZION"]
+    data = organize_data(stock_names)
+
+    # for each risk, run day_trading() 30 times and calculate average profit
+    for i in range(len(R)):
+        for j in range(n):
+            a, b, c = day_trading(cash, data, time, R[i])
+            profit_values[j] = a
+        print("completed iteration ", i+1, " of ", len(R))
+        profit_sd_risk[i] = np.std(profit_values)
+        profit_risk[i] = np.mean(profit_values)
+    
+    # plot results
+    plt.figure(2)
+    plt.errorbar(R, profit_risk, yerr=profit_sd_risk, fmt='o', capsize=5)
+    plt.xlabel('Risk')
+    plt.ylabel('Average Profit ($)')
+    plt.title('Effect of Risk on Average Profit')
+
+#%%
+if 'numStocks' in explorations_to_run:
+    # vary number of stocks
+    profit_stocks = np.zeros(5)
+    profit_values = np.zeros(n)
+    profit_sd_stocks = np.zeros(5)
+
+    # constants
+    cash = 10000
+    time = 365
+    R = 1
+
+    # 1 stock
+    stock_names = ["TSLA"]
+    data = organize_data(stock_names)
+
     for j in range(n):
-        a, b, c = day_trading(cash_initial, data, time[i], R)
+        a, b, c = day_trading(cash, data, time, R)
+        profit_values[j] = a
+    profit_sd_stocks[0] = np.std(profit_values)
+    profit_stocks[0] = np.mean(profit_values)
+
+    # 3 stocks
+    stock_names = ["TSLA", "AAPL", "MSFT"]
+    data = organize_data(stock_names)
+
+    for j in range(n):
+        a, b, c = day_trading(cash, data, time, R)
         profit_values[j] = a
         
-    profit_time[i] = np.mean(profit_values)
-   
-# plot results
-plt.figure(1)
-plt.scatter(time, profit_time, marker = 'o')
-plt.xlabel('Time (Days)')
-plt.ylabel('Average Profit ($)')
+    profit_stocks[1] = np.mean(profit_values)
+    profit_sd_stocks[1] = np.std(profit_values)
 
-#%%
-# vary initial cash investment
-cash = [100, 500, 1000, 5000, 10000]
-profit_cash = np.zeros(len(cash))
-profit_values = np.zeros(n)
+    # 5 stocks
+    stock_names = ["TSLA", "AAPL", "MSFT", "AMZN", "GOOGL"]
+    data = organize_data(stock_names)
 
-# constants
-time = 365
-R = 1
-stock_names = ["TSLA", "AAPL", "MSFT", "AMZN", "GOOGL"]
-data = organize_data(stock_names)
-
-# for each cash, run day_trading() 30 times and calculate average profit
-for i in range(len(cash)):
     for j in range(n):
-        a, b, c = day_trading(cash[i], data, time, R)
+        a, b, c = day_trading(cash, data, time, R)
         profit_values[j] = a
         
-    profit_cash[i] = np.mean(profit_values)
- 
-# plot results
-plt.figure(2)
-plt.scatter(cash, profit_cash, marker = 'o')
-plt.xlabel('Initial Investment ($)')
-plt.ylabel('Average Profit ($)')
+    profit_stocks[2] = np.mean(profit_values)
+    profit_sd_stocks[2] = np.std(profit_values)
 
-#%%
+    # 7 stocks
+    stock_names = ["TSLA", "AAPL", "MSFT", "AMZN", "GOOGL", "NVDA", "ZION"]
+    data = organize_data(stock_names)
 
-# vary risk
-R = [0.5, 0.625, 0.75, 0.875, 1]
-profit_risk = np.zeros(len(R))
-profit_values = np.zeros(n)
-
-# constants
-time = 365
-cash = 1000
-stock_names = ["NVDA", "MSFT", "MRNA", "GOOGL", "ZION"]
-data = organize_data(stock_names)
-
-# for each risk, run day_trading() 30 times and calculate average profit
-for i in range(len(R)):
     for j in range(n):
-        a, b, c = day_trading(cash, data, time, R[i])
+        a, b, c = day_trading(cash, data, time, R)
         profit_values[j] = a
         
-    profit_risk[i] = np.mean(profit_values)
- 
-# plot results
-plt.figure(2)
-plt.scatter(R, profit_risk, marker = 'o')
-plt.xlabel('Risk')
-plt.ylabel('Average Profit ($)')
+    profit_stocks[3] = np.mean(profit_values)
+    profit_sd_stocks[3] = np.std(profit_values)
 
-#%%
+    # 10 stocks
+    stock_names = ["TSLA", "AAPL", "MSFT", "AMZN", "GOOGL", "NVDA", "ZION", "MRNA", "NFLX", "DIS"]
+    data = organize_data(stock_names)
 
-# vary number of stocks
-profit_stocks = np.zeros(5)
-profit_values = np.zeros(n)
+    for j in range(n):
+        a, b, c = day_trading(cash, data, time, R)
+        profit_values[j] = a
+        
+    profit_sd_stocks[4] = np.std(profit_values)
+    profit_stocks[4] = np.mean(profit_values)
 
-# constants
-cash = 10000
-time = 365
-R = 1
-
-# 1 stock
-stock_names = ["TSLA"]
-data = organize_data(stock_names)
-
-for j in range(n):
-    a, b, c = day_trading(cash, data, time, R)
-    profit_values[j] = a
-    
-profit_stocks[0] = np.mean(profit_values)
-
-# 3 stocks
-stock_names = ["TSLA", "AAPL", "MSFT"]
-data = organize_data(stock_names)
-
-for j in range(n):
-    a, b, c = day_trading(cash, data, time, R)
-    profit_values[j] = a
-    
-profit_stocks[1] = np.mean(profit_values)
-
-# 5 stocks
-stock_names = ["TSLA", "AAPL", "MSFT", "AMZN", "GOOGL"]
-data = organize_data(stock_names)
-
-for j in range(n):
-    a, b, c = day_trading(cash, data, time, R)
-    profit_values[j] = a
-    
-profit_stocks[2] = np.mean(profit_values)
-
-# 7 stocks
-stock_names = ["TSLA", "AAPL", "MSFT", "AMZN", "GOOGL", "NVDA", "ZION"]
-data = organize_data(stock_names)
-
-for j in range(n):
-    a, b, c = day_trading(cash, data, time, R)
-    profit_values[j] = a
-    
-profit_stocks[3] = np.mean(profit_values)
-
-# 10 stocks
-stock_names = ["TSLA", "AAPL", "MSFT", "AMZN", "GOOGL", "NVDA", "ZION", "MRNA", "NFLX", "DIS"]
-data = organize_data(stock_names)
-
-for j in range(n):
-    a, b, c = day_trading(cash, data, time, R)
-    profit_values[j] = a
-    
-profit_stocks[4] = np.mean(profit_values)
-
-# plot results
-plt.figure(3)
-number = [1, 3, 5, 7, 10]
-plt.scatter(number, profit_stocks, marker = 'o')
-plt.xlabel("Number of Stocks in Portfolio")
-plt.ylabel("Average Profit ($)")
-
-
-
+    # plot results
+    plt.figure(3)
+    number = [1, 3, 5, 7, 10]
+    plt.errorbar(number, profit_stocks, yerr=profit_sd_stocks, fmt='o', capsize=5)
+    plt.title("Effect of Number of Stocks on Average Profit")
+    plt.xlabel("Number of Stocks in Portfolio")
+    plt.ylabel("Average Profit ($)")
 
 # %%
