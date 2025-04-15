@@ -75,3 +75,64 @@ fin_hist_data = load_or_download_stock_data(stock_names)
 plot_stock_data(fin_hist_data, stock_names)
 
 # %%
+import plotly.graph_objects as go
+import pandas as pd
+import numpy as np
+
+# Simulated stock data (replace this with your actual data from `fin_hist_data`)
+
+# Prepare data for 3D plotting
+stock_names = list(fin_hist_data.keys())
+time_numeric = []
+stock_indices = []
+closing_prices = []
+
+for i, stock in enumerate(stock_names):
+    stock_data = fin_hist_data[stock]
+    # CORRECTED CONVERSION: Convert index to numpy array first
+    time_values = stock_data.index.to_numpy().astype('datetime64[s]').astype('int64')
+    time_numeric.extend(time_values.tolist())
+    stock_indices.extend([i] * len(stock_data))  # Stock index for y-axis
+    closing_prices.extend(stock_data['Close'].values)  # Closing prices for z-axis
+
+# Convert to numpy arrays for Plotly
+time_numeric = np.array(time_numeric)
+stock_indices = np.array(stock_indices)
+closing_prices = np.array(closing_prices)
+
+# Create a 3D scatter plot
+fig = go.Figure()
+
+fig.add_trace(go.Scatter3d(
+    x=time_numeric,
+    y=stock_indices,
+    z=closing_prices,
+    mode='markers',
+    marker=dict(
+        size=5,
+        color=closing_prices,  # Color by closing price
+        colorscale='Viridis',  # Colormap
+        opacity=0.8
+    )
+))
+
+# Customize layout
+fig.update_layout(
+    title="3D Stock Data Visualization",
+    scene=dict(
+        xaxis=dict(title="Time (numeric)"),
+        yaxis=dict(title="Stock Name"),
+        zaxis=dict(title="Closing Price (USD)")
+    ),
+)
+
+# Add custom labels for stock names on y-axis
+fig.update_layout(scene=dict(
+    yaxis=dict(
+        tickmode='array',
+        tickvals=list(range(len(stock_names))),
+        ticktext=stock_names
+    )
+))
+
+fig.show()
