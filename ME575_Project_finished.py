@@ -6,6 +6,8 @@ Created on Sat Apr  5 15:34:38 2025
 @author: addisonmcclure
 """
 #%%
+from turtle import color
+import matplotlib
 import numpy as np
 import random
 import yfinance as yf
@@ -180,9 +182,13 @@ def day_trading(cash_initial, data, time, R):
     # for tracking portfolio
     portfolio_history = np.zeros([time, len(data.columns)])
     portfolio_value_history = np.zeros([time,1])
+    cash_history = np.zeros([time,1])
     
     # make initial investment
     x, cash = initial_investment(cash_initial, data)
+
+
+    cash_history[0] = cash
 
     # every day, take derivative and decide what to buy and sell 
     for i in range(1, time):
@@ -199,6 +205,7 @@ def day_trading(cash_initial, data, time, R):
             # buy if stock rapidly decreases
             elif derivatives.iloc[j] < -1:  
                 x, cash = buy(x, cash, data, R, j, i)
+            cash_history[i] = cash
                 
         # record purchases and sales
         portfolio_history[i,:] = x
@@ -208,7 +215,7 @@ def day_trading(cash_initial, data, time, R):
     final_value = cash + f(x, data, i)
     profit = final_value - cash_initial
 
-    return profit, portfolio_history, portfolio_value_history
+    return profit, portfolio_history, portfolio_value_history, cash_history
 
 
 # exploring the design space
@@ -264,7 +271,7 @@ if 'cash' in explorations_to_run:
     # for each cash, run day_trading() 30 times and calculate average profit
     for i in range(len(cash)):
         for j in range(n):
-            a, b, c = day_trading(cash[i], data, time, R)
+            a, b, c, d = day_trading(cash[i], data, time, R)
             profit_values[j] = a
         print("completed iteration ", i+1, " of ", len(cash))
         profit_sd_cash[i] = np.std(profit_values)
@@ -296,7 +303,7 @@ if 'risk' in explorations_to_run:
     # for each risk, run day_trading() 30 times and calculate average profit
     for i in range(len(R)):
         for j in range(n):
-            a, b, c = day_trading(cash, data, time, R[i])
+            a, b, c, d = day_trading(cash, data, time, R[i])
             profit_values[j] = a
         print("completed iteration ", i+1, " of ", len(R))
         profit_sd_risk[i] = np.std(profit_values)
@@ -329,7 +336,7 @@ if 'numStocks' in explorations_to_run:
     data = organize_data(stock_names)
 
     for j in range(n):
-        a, b, c = day_trading(cash, data, time, R)
+        a, b, c, d = day_trading(cash, data, time, R)
         profit_values[j] = a
     profit_sd_stocks[0] = np.std(profit_values)
     profit_stocks[0] = np.mean(profit_values)
@@ -339,7 +346,7 @@ if 'numStocks' in explorations_to_run:
     data = organize_data(stock_names)
 
     for j in range(n):
-        a, b, c = day_trading(cash, data, time, R)
+        a, b, c, d = day_trading(cash, data, time, R)
         profit_values[j] = a
         
     profit_stocks[1] = np.mean(profit_values)
@@ -350,7 +357,7 @@ if 'numStocks' in explorations_to_run:
     data = organize_data(stock_names)
 
     for j in range(n):
-        a, b, c = day_trading(cash, data, time, R)
+        a, b, c, d = day_trading(cash, data, time, R)
         profit_values[j] = a
         
     profit_stocks[2] = np.mean(profit_values)
@@ -361,7 +368,7 @@ if 'numStocks' in explorations_to_run:
     data = organize_data(stock_names)
 
     for j in range(n):
-        a, b, c = day_trading(cash, data, time, R)
+        a, b, c, d = day_trading(cash, data, time, R)
         profit_values[j] = a
         
     profit_stocks[3] = np.mean(profit_values)
@@ -372,7 +379,7 @@ if 'numStocks' in explorations_to_run:
     data = organize_data(stock_names)
 
     for j in range(n):
-        a, b, c = day_trading(cash, data, time, R)
+        a, b, c, d = day_trading(cash, data, time, R)
         profit_values[j] = a
         
     profit_sd_stocks[4] = np.std(profit_values)
@@ -395,5 +402,123 @@ if 'single_long_run' in explorations_to_run:
     cash = 10000
     stock_names = ["TSLA", "AAPL", "MSFT", "AMZN", "GOOGL", "NVDA", "ZION", "MRNA", "NFLX", "DIS"]
     data = organize_data(stock_names)
-    
+    time = 700  # 5 years in days
+    R = 0.76 # Risk factor
+    profits, portfolio_history, value_history, cash_history = day_trading(cash, data, time, R)
+    #%%
+    # plt.figure(4)
+    # plt.plot(value_history, label='Portfolio Value Over Time')
+    # plt.xlabel('Days')
+    # plt.ylabel('Portfolio Value ($)')
+    # plt.title('Portfolio Performance Over 5 Years')
+    # plt.legend()
+    # plt.show()
+    #%%
+    # Assuming you have these from your simulation:
+# portfolio_history, data, cash_history, stock_names
 
+    stock_values = portfolio_history * data.values[:time]
+    cash_history_flat = cash_history.flatten()
+    stack_data = np.vstack((cash_history_flat, stock_values.T))
+
+    num_areas = len(stock_names) + 1  # +1 for cash
+    # cmap = plt.get_cmap("tab20")
+    # colors = [cmap(i) for i in range(num_areas)]
+
+    # plt.figure(figsize=(12, 6))
+    # plt.stackplot(
+    #     np.arange(stock_values.shape[0]),
+    #     stack_data,
+    #     labels=['Cash'] + stock_names,
+    #     alpha=0.8,
+    #     colors=colors
+    # )
+    # plt.xlabel('Days')
+    # plt.ylabel('Value ($)')
+    # plt.title('Portfolio Value Over Time (Including Cash)')
+    # plt.legend(loc='upper left', ncol=2)
+    # plt.tight_layout()
+    # plt.show()
+
+#%%
+    import numpy as np
+    import matplotlib.pyplot as plt
+    from matplotlib.animation import FuncAnimation
+    from matplotlib import cm
+
+    # Assuming you have these from your simulation:
+    # - stock_values: portfolio_history * data.values
+    # - cash_history_flat: cash_history.flatten()
+    # - stock_names: list of your stock tickers
+
+    # 1. Set up the figure and axes
+    fig, ax = plt.subplots(figsize=(12, 6))
+
+    # 2. Prepare data for stacked plot
+    combined_data = np.vstack((cash_history_flat, stock_values.T))
+    labels = ['Cash'] + stock_names
+
+    # 3. Choose a colormap with many distinct colors
+    n_components = len(labels)
+    cmap = plt.get_cmap('tab20', n_components)
+    colors = [cmap(i) for i in range(n_components)]
+
+    # 4. Create static legend patches that we'll reuse
+    patches = [plt.Rectangle((0,0), 1, 1, color=colors[i]) for i in range(n_components)]
+
+    # 5. Define update function for animation
+    def update(frame):
+        ax.clear()
+        
+        # Only plot data up to the current frame
+        days = np.arange(frame)
+        data_to_plot = combined_data[:, :frame]
+        
+        # Create stacked plot for this frame
+        if frame > 0:
+            ax.stackplot(days, data_to_plot, colors=colors, alpha=0.8)
+        
+        # Re-add the legend after clearing axes (this ensures legend persistence)
+        ax.legend(patches, labels, loc='upper left', ncol=2)
+        
+        # Dynamically update x-axis limit
+        ax.set_xlim(0, frame + 50)
+        
+        # Set y-axis limit based on maximum portfolio value
+        if frame > 0:
+            total_value = np.sum(data_to_plot, axis=0)
+            max_value = np.max(total_value) if len(total_value) > 0 else 30000
+            ax.set_ylim(0, max_value * 1.1)  # 10% padding
+        else:
+            ax.set_ylim(0, 35000)  # Initial view
+        
+        # Labels and title
+        ax.set_xlabel('Days')
+        ax.set_ylabel('Value ($)')
+        ax.set_title(f'Portfolio Value Over Time - Day {frame}')
+        
+        # # Add annotation for market crash around day 450
+        # if 440 <= frame <= 460:
+        #     ax.annotate('Portfolio liquidation event', 
+        #             xy=(450, 5000), xytext=(300, 20000),
+        #             arrowprops=dict(facecolor='red', shrink=0.05),
+        #             bbox=dict(boxstyle="round", fc="yellow", alpha=0.8))
+        
+        return ax
+
+    # 6. Create animation
+    # Use a subset of frames for better performance
+    step = 5  # Every 5th day (adjust for smoothness vs. speed)
+    frames = range(1, combined_data.shape[1], step)
+    ani = FuncAnimation(fig, update, frames=frames, interval=50, blit=False)
+
+    # Display the animation
+    plt.tight_layout(pad=2.0)
+    plt.show()
+
+    # 7. Save the animation (uncomment to save)
+    ani.save('portfolio_animation.gif', writer='pillow', fps=20, dpi=100)
+    # For higher quality: 
+    # ani.save('portfolio_animation.mp4', writer='ffmpeg', fps=30, dpi=100)
+
+# %%
